@@ -1,19 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Equilibria Engine Playground</title>
-    
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
 
     <!-- Dependencies -->
     <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
     <script src="https://unpkg.com/equilibria-engine@latest/dist/equilibria-engine.umd.min.js"></script>
-    
+
     <style>
         :root {
             /* Light Theme */
@@ -174,7 +177,7 @@
             padding: 16px;
             width: 100%;
             max-width: 800px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
 
         .controls-container {
@@ -185,19 +188,23 @@
             gap: 16px;
             margin-bottom: 24px;
         }
-        
+
         /* Layout Grid Options */
-        .grid-layout-1 { /* Single */ }
-        
-        .grid-layout-2-h { /* Dual Horizontal */
-           display: grid;
-           grid-template-columns: 1fr 1fr;
-           gap: 16px;
-           width: 100%;
-           max-width: 1200px;
+        .grid-layout-1 {
+            /* Single */
         }
 
-        .grid-layout-2-v { /* Dual Vertical */
+        .grid-layout-2-h {
+            /* Dual Horizontal */
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        .grid-layout-2-v {
+            /* Dual Vertical */
             display: flex;
             flex-direction: column;
             gap: 16px;
@@ -205,7 +212,8 @@
             max-width: 800px;
         }
 
-        .grid-layout-4 { /* 2x2 Grid */
+        .grid-layout-4 {
+            /* 2x2 Grid */
             display: grid;
             grid-template-columns: 1fr 1fr;
             grid-template-rows: auto auto;
@@ -239,7 +247,7 @@
             cursor: pointer;
             user-select: none;
         }
-        
+
         .console-header:hover {
             background-color: var(--border-color);
         }
@@ -258,9 +266,19 @@
             border-radius: 4px;
         }
 
-        .log-error { background-color: rgba(220, 38, 38, 0.1); color: var(--error-color); }
-        .log-warn { background-color: rgba(217, 119, 6, 0.1); color: var(--warning-color); }
-        .log-info { color: var(--text-secondary); }
+        .log-error {
+            background-color: rgba(220, 38, 38, 0.1);
+            color: var(--error-color);
+        }
+
+        .log-warn {
+            background-color: rgba(217, 119, 6, 0.1);
+            color: var(--warning-color);
+        }
+
+        .log-info {
+            color: var(--text-secondary);
+        }
 
         /* Footer */
         footer {
@@ -279,32 +297,40 @@
             main {
                 flex-direction: column;
             }
-            .editor-pane, .preview-pane {
+
+            .editor-pane,
+            .preview-pane {
                 width: 100%;
                 height: 50%;
             }
+
             .actions span {
                 display: none;
             }
         }
 
         /* Helper for Monaco */
-        .monaco-editor { padding-top: 8px; }
+        .monaco-editor {
+            padding-top: 8px;
+        }
     </style>
 </head>
+
 <body data-theme="light">
 
     <!-- HEADER -->
     <header>
         <div class="brand">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
             </svg>
             <span>Equilibria Engine Playground</span>
         </div>
         <div class="actions">
             <button id="theme-btn" onclick="toggleTheme()">Dark Mode</button>
-            <a href="https://github.com/equilibria-engine/equilibria-engine" target="_blank" style="text-decoration: none;">
+            <a href="https://github.com/equilibria-engine/equilibria-engine" target="_blank"
+                style="text-decoration: none;">
                 <button>Documentation</button>
             </a>
         </div>
@@ -421,7 +447,7 @@ charts:
         radius: 6
         color: "#1f2937"
         label: "Equilibrium"`,
-            
+
             'tax-incidence': `metadata:
   title: "Tax Incidence"
 parameters:
@@ -502,9 +528,9 @@ charts:
         let debounceTimer = null;
 
         // --- Monaco Initialization ---
-        require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs' }});
-        
-        require(['vs/editor/editor.main'], function() {
+        require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs' } });
+
+        require(['vs/editor/editor.main'], function () {
             editor = monaco.editor.create(document.getElementById('editor-container'), {
                 value: EXAMPLES['supply-demand'],
                 language: 'yaml',
@@ -534,71 +560,71 @@ charts:
         function renderFromYaml() {
             const yamlString = editor.getValue();
             const consoleContent = document.getElementById('console-content');
-            
+
             try {
                 // 1. Parse YAML
                 const parsedModel = jsyaml.load(yamlString);
-                
+
                 // 2. Clear Errors
                 clearConsole();
                 document.getElementById('editor-status').innerText = 'Ready';
-                
+
                 // 3. Render
                 const container = document.getElementById('preview-content');
-                
+
                 // Note: In a real implementation with the engine, we'd use:
                 // if (engineInstance) engineInstance.destroy();
                 // engineInstance = new EquilibriaEngine.Engine(container, parsedModel);
-                
+
                 // For this implementation, since we're using the CDN engine which might differ slightly
                 // in instantiation API, we'll implement a Mock/Wrapper logic if the global isn't exact,
                 // BUT assuming the spec is correct and window.EquilibriaEngine exists:
-                
+
                 if (typeof window.EquilibriaEngine === 'undefined') {
-                   throw new Error("Equilibria Engine not loaded from CDN."); 
+                    throw new Error("Equilibria Engine not loaded from CDN.");
                 }
 
                 // Reset container
                 container.innerHTML = '';
-                
+
                 // Create Layout Container
                 const layoutDiv = document.createElement('div');
                 const layoutType = document.getElementById('layout-select').value || 'single';
-                
+
                 // Map select values to CSS classes
                 let gridClass = 'grid-layout-1';
                 if (layoutType === 'grid-2h') gridClass = 'grid-layout-2-h';
                 else if (layoutType === 'grid-2v') gridClass = 'grid-layout-2-v';
                 else if (layoutType === 'grid-4') gridClass = 'grid-layout-4';
-                
+
                 layoutDiv.className = gridClass;
                 container.appendChild(layoutDiv);
 
                 // --- Actual Engine Instantiation ---
                 // We're essentially rebuilding the DOM for the engine to attach to.
                 // The engine typically expects a container and schema.
-                
+
                 // IMPORTANT: Since I can't guarantee the exact API of the User's "EquilibriaEngine" 
                 // without seeing its docs, I will use a robust approach:
                 // 1. Create a controls area
                 // 2. Create chart divs based on the schema
-                
+
                 // Render Controls
                 if (parsedModel.parameters) {
-                     const controlsDiv = document.createElement('div');
-                     controlsDiv.className = 'controls-container';
-                     controlsDiv.style.marginBottom = '20px';
-                     controlsDiv.style.width = '100%';
-                     // Simple placeholder for controls visualization or engine hook
-                     // controlsDiv.innerHTML = '<!-- Engine controls will populate here -->';
-                     container.insertBefore(controlsDiv, layoutDiv);
+                    const controlsDiv = document.createElement('div');
+                    controlsDiv.className = 'controls-container';
+                    controlsDiv.style.marginBottom = '20px';
+                    controlsDiv.style.width = '100%';
+                    // Simple placeholder for controls visualization or engine hook
+                    // controlsDiv.innerHTML = '<!-- Engine controls will populate here -->';
+                    container.insertBefore(controlsDiv, layoutDiv);
                 }
 
                 if (parsedModel.charts) {
                     parsedModel.charts.forEach(chart => {
                         const chartWrapper = document.createElement('div');
                         chartWrapper.className = 'chart-container';
-                        chartWrapper.style.height = '400px'; 
+                        chartWrapper.style.height = '400px';
                         chartWrapper.id = 'chart-' + chart.id;
                         layoutDiv.appendChild(chartWrapper);
                     });
@@ -607,17 +633,18 @@ charts:
                 // Call Engine (Attempting standard init based on typical usage)
                 // If the engine acts on the DOM, this is where it happens.
                 // Assuming: EquilibriaEngine.render(container, schema) or similar.
-                
+
                 // Since I am essentially simulating the playground for the user to hook up:
                 // I will add a try-catch block that specifically looks for the Engine.
-                
+
                 try {
                     // Check if we have a render function or constructor
                     if (window.EquilibriaEngine.render) {
-                        window.EquilibriaEngine.render(container, parsedModel);
+                        // FIX: Pass ID string, not element, as engine may prepend '#'
+                        window.EquilibriaEngine.render(container.id, parsedModel);
                         logInfo('Rendered successfully');
                     } else if (window.EquilibriaEngine.App) {
-                        new window.EquilibriaEngine.App(container, parsedModel);
+                        new window.EquilibriaEngine.App(container.id, parsedModel);
                         logInfo('App initialized successfully');
                     } else {
                         // If we can't find the exact entry point, we log it but don't crash
@@ -625,14 +652,14 @@ charts:
                         // Note: In the real world, I'd check the UMD export structure.
                     }
                 } catch (e) {
-                     // If engine fails, we log it but keep the UI alive
-                     logWarn('Engine runtime warning: ' + e.message);
+                    // If engine fails, we log it but keep the UI alive
+                    logWarn('Engine runtime warning: ' + e.message);
                 }
 
             } catch (e) {
                 // Handle YAML or Logic Errors
                 logError(e.message);
-                
+
                 // Show error state in editor status
                 document.getElementById('editor-status').innerText = 'Error';
                 document.getElementById('editor-status').style.color = 'var(--error-color)';
@@ -664,7 +691,7 @@ charts:
             isDarkMode = !isDarkMode;
             document.body.setAttribute('data-theme', isDarkMode ? 'dark' : 'light');
             document.getElementById('theme-btn').innerText = isDarkMode ? 'Light Mode' : 'Dark Mode';
-            
+
             // Update Monaco Theme
             monaco.editor.setTheme(isDarkMode ? 'vs-dark' : 'vs-light');
         }
@@ -705,11 +732,11 @@ charts:
             updateConsoleCount(0, true);
         }
 
-        function updateConsoleCount(inc, reset=false) {
+        function updateConsoleCount(inc, reset = false) {
             const title = document.getElementById('console-title');
             let current = reset ? 0 : parseInt(title.innerText.match(/\d+/)[0]) + inc;
             title.innerText = `Console (${current})`;
-            
+
             if (current > 0 && !reset) {
                 title.style.color = 'var(--error-color)';
             } else {
@@ -726,4 +753,5 @@ charts:
 
     </script>
 </body>
+
 </html>
