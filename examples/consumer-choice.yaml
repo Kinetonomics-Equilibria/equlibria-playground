@@ -1,0 +1,16 @@
+metadata:
+  title: "Consumer Choice"
+parameters:
+  budget: { value: 100, min: 20, max: 200 }
+  px: { value: 2, min: 0.5, max: 5, label: "Price X" }
+  py: { value: 1, min: 0.5, max: 5, label: "Price Y" }
+charts:
+  - id: main
+    xAxis: { label: "Good X", min: 0, max: 100 }
+    yAxis: { label: "Good Y", min: 0, max: 100 }
+    elements:
+      - id: budget_line
+        type: line
+        equation: "(budget - px * x) / py"
+        color: "green"
+        label: "Budget"

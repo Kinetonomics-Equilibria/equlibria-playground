@@ -1,0 +1,28 @@
+metadata:
+  title: "Tax Incidence"
+parameters:
+  tax:
+    value: 10
+    min: 0
+    max: 40
+    label: "Tax Amount"
+charts:
+  - id: main
+    xAxis: { label: "Q", min: 0, max: 100 }
+    yAxis: { label: "P", min: 0, max: 100 }
+    elements:
+      - id: d
+        type: line
+        equation: "90 - x"
+        color: "blue"
+      - id: s
+        type: line
+        equation: "10 + x"
+        color: "red"
+        lineStyle: "dashed"
+        opacity: 0.5
+      - id: s_tax
+        type: line
+        equation: "10 + x + tax"
+        color: "red"
+        label: "S + Tax"

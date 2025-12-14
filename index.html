@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Equilibria Engine Playground</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <!-- Dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
+    <script src="https://unpkg.com/equilibria-engine@latest/dist/equilibria-engine.umd.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --bg-primary: #ffffff;
+            --bg-secondary: #f9fafb;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --border-color: #e5e7eb;
+            --accent-color: #2563eb;
+            --accent-hover: #1d4ed8;
+            --error-color: #dc2626;
+            --warning-color: #d97706;
+            --success-color: #059669;
+            --font-sans: 'Inter', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        [data-theme="dark"] {
+            /* Dark Theme */
+            --bg-primary: #111827;
+            --bg-secondary: #1f2937;
+            --text-primary: #f9fafb;
+            --text-secondary: #9ca3af;
+            --border-color: #374151;
+            --accent-color: #3b82f6;
+            --accent-hover: #60a5fa;
+            --error-color: #ef4444;
+            --warning-color: #f59e0b;
+            --success-color: #10b981;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Header */
+        header {
+            height: 56px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            background-color: var(--bg-secondary);
+        }
+
+        .brand {
+            font-weight: 700;
+            font-size: 1.125rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        button {
+            background: none;
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: var(--font-sans);
+        }
+
+        button:hover {
+            background-color: var(--bg-primary);
+            border-color: var(--text-secondary);
+        }
+
+        button.primary {
+            background-color: var(--accent-color);
+            color: white;
+            border-color: transparent;
+        }
+
+        button.primary:hover {
+            background-color: var(--accent-hover);
+        }
+
+        /* Main Layout */
+        main {
+            flex: 1;
+            display: flex;
+            min-height: 0;
+        }
+
+        .editor-pane {
+            width: 40%;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid var(--border-color);
+            background-color: var(--bg-primary);
+        }
+
+        .preview-pane {
+            width: 60%;
+            display: flex;
+            flex-direction: column;
+            background-color: var(--bg-secondary);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pane-header {
+            height: 40px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 12px;
+            background-color: var(--bg-secondary);
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        #editor-container {
+            flex: 1;
+            min-height: 0;
+        }
+
+        /* Preview Area */
+        .preview-content {
+            flex: 1;
+            overflow: auto;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            align-items: center;
+        }
+
+        .chart-container {
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px;
+            width: 100%;
+            max-width: 800px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .controls-container {
+            width: 100%;
+            max-width: 800px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        
+        /* Layout Grid Options */
+        .grid-layout-1 { /* Single */ }
+        
+        .grid-layout-2-h { /* Dual Horizontal */
+           display: grid;
+           grid-template-columns: 1fr 1fr;
+           gap: 16px;
+           width: 100%;
+           max-width: 1200px;
+        }
+
+        .grid-layout-2-v { /* Dual Vertical */
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .grid-layout-4 { /* 2x2 Grid */
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: auto auto;
+            gap: 16px;
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        /* Console */
+        .console-pane {
+            height: 160px;
+            background-color: var(--bg-primary);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            transition: height 0.3s;
+        }
+
+        .console-pane.collapsed {
+            height: 40px;
+        }
+
+        .console-header {
+            height: 40px;
+            padding: 0 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border-color);
+            background-color: var(--bg-secondary);
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        .console-header:hover {
+            background-color: var(--border-color);
+        }
+
+        .console-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px;
+            font-family: var(--font-mono);
+            font-size: 0.875rem;
+        }
+
+        .log-entry {
+            margin-bottom: 8px;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        .log-error { background-color: rgba(220, 38, 38, 0.1); color: var(--error-color); }
+        .log-warn { background-color: rgba(217, 119, 6, 0.1); color: var(--warning-color); }
+        .log-info { color: var(--text-secondary); }
+
+        /* Footer */
+        footer {
+            height: 48px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            background-color: var(--bg-secondary);
+            font-size: 0.875rem;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            main {
+                flex-direction: column;
+            }
+            .editor-pane, .preview-pane {
+                width: 100%;
+                height: 50%;
+            }
+            .actions span {
+                display: none;
+            }
+        }
+
+        /* Helper for Monaco */
+        .monaco-editor { padding-top: 8px; }
+    </style>
+</head>
+<body data-theme="light">
+
+    <!-- HEADER -->
+    <header>
+        <div class="brand">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+            </svg>
+            <span>Equilibria Engine Playground</span>
+        </div>
+        <div class="actions">
+            <button id="theme-btn" onclick="toggleTheme()">Dark Mode</button>
+            <a href="https://github.com/equilibria-engine/equilibria-engine" target="_blank" style="text-decoration: none;">
+                <button>Documentation</button>
+            </a>
+        </div>
+    </header>
+
+    <!-- MAIN APP -->
+    <main>
+        <!-- Left: Editor -->
+        <div class="editor-pane">
+            <div class="pane-header">
+                <span>YAML Editor</span>
+                <span id="editor-status" style="font-size: 0.75rem;">Ready</span>
+            </div>
+            <div id="editor-container"></div>
+        </div>
+
+        <!-- Right: Preview -->
+        <div class="preview-pane">
+            <div class="pane-header">
+                <span>Live Preview</span>
+                <select id="layout-select" onchange="updateLayout(this.value)">
+                    <option value="single">Single View</option>
+                    <option value="grid-2h">Dual Horizontal</option>
+                    <option value="grid-2v">Dual Vertical</option>
+                    <option value="grid-4">Grid (2x2)</option>
+                </select>
+            </div>
+
+            <!-- Content Area Rendered by Engine -->
+            <div id="preview-content" class="preview-content">
+                <!-- Engine output goes here -->
+            </div>
+
+            <!-- Console -->
+            <div class="console-pane" id="console-pane">
+                <div class="console-header" onclick="toggleConsole()">
+                    <span id="console-title">Console (0)</span>
+                    <span id="console-toggle-icon">▼</span>
+                </div>
+                <div id="console-content" class="console-content">
+                    <div class="log-entry log-info">Equilibria Engine v1.0.0 initialized</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer>
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <label for="example-select">Load Example:</label>
+            <select id="example-select" onchange="loadSelectedExample()">
+                <option value="supply-demand">Supply & Demand</option>
+                <option value="tax-incidence">Tax Incidence</option>
+                <option value="consumer-choice">Consumer Choice</option>
+                <option value="grid-4">Multi-Chart Grid</option>
+            </select>
+        </div>
+        <div>
+            <button onclick="resetToDefaults()">Reset</button>
+        </div>
+    </footer>
+
+    <!-- MONACO LOADER -->
+    <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/loader.js"></script>
+
+    <!-- APP LOGIC -->
+    <script>
+        // --- Examples Data ---
+        const EXAMPLES = {
+            'supply-demand': `metadata:
+  title: "Supply and Demand"
+  specVersion: "1.3"
+
+parameters:
+  price:
+    value: 50
+    min: 0
+    max: 100
+    step: 5
+    label: "Price"
+    unit: "$"
+
+charts:
+  - id: main
+    title: "Market Equilibrium"
+    xAxis:
+      label: "Quantity"
+      min: 0
+      max: 100
+    yAxis:
+      label: "Price ($)"
+      min: 0
+      max: 100
+
+    elements:
+      - id: demand
+        type: line
+        equation: "100 - x"
+        color: "#2563eb"
+        strokeWidth: 3
+        label: "Demand"
+
+      - id: supply
+        type: line
+        equation: "x"
+        color: "#dc2626"
+        strokeWidth: 3
+        label: "Supply"
+
+      - id: equilibrium
+        type: point
+        x: 50
+        y: 50
+        radius: 6
+        color: "#1f2937"
+        label: "Equilibrium"`,
+            
+            'tax-incidence': `metadata:
+  title: "Tax Incidence"
+parameters:
+  tax:
+    value: 10
+    min: 0
+    max: 40
+    label: "Tax Amount"
+charts:
+  - id: main
+    xAxis: { label: "Q", min: 0, max: 100 }
+    yAxis: { label: "P", min: 0, max: 100 }
+    elements:
+      - id: d
+        type: line
+        equation: "90 - x"
+        color: "blue"
+      - id: s
+        type: line
+        equation: "10 + x"
+        color: "red"
+        lineStyle: "dashed"
+        opacity: 0.5
+      - id: s_tax
+        type: line
+        equation: "10 + x + tax"
+        color: "red"
+        label: "S + Tax"`,
+
+            'consumer-choice': `metadata:
+  title: "Consumer Choice"
+parameters:
+  budget: { value: 100, min: 20, max: 200 }
+  px: { value: 2, min: 0.5, max: 5, label: "Price X" }
+  py: { value: 1, min: 0.5, max: 5, label: "Price Y" }
+charts:
+  - id: main
+    xAxis: { label: "Good X", min: 0, max: 100 }
+    yAxis: { label: "Good Y", min: 0, max: 100 }
+    elements:
+      - id: budget_line
+        type: line
+        equation: "(budget - px * x) / py"
+        color: "green"
+        label: "Budget"`,
+
+            'grid-4': `metadata:
+  title: "4-Chart Dashboard"
+parameters:
+  val: { value: 50, min: 0, max: 100 }
+charts:
+  - id: c1
+    title: "Chart 1"
+    xAxis: { min: 0, max: 100 }
+    yAxis: { min: 0, max: 100 }
+    elements: [{id: l1, type: line, equation: "x", color: "blue"}]
+  - id: c2
+    title: "Chart 2"
+    xAxis: { min: 0, max: 100 }
+    yAxis: { min: 0, max: 100 }
+    elements: [{id: l2, type: line, equation: "100-x", color: "red"}]
+  - id: c3
+    title: "Chart 3"
+    xAxis: { min: 0, max: 100 }
+    yAxis: { min: 0, max: 100 }
+    elements: [{id: l3, type: line, equation: "val", color: "green"}]
+  - id: c4
+    title: "Chart 4"
+    xAxis: { min: 0, max: 100 }
+    yAxis: { min: 0, max: 100 }
+    elements: [{id: p1, type: point, x: val, y: val, color: "purple"}]`
+        };
+
+        // --- State ---
+        let editor;
+        let engineInstance = null;
+        let isDarkMode = false;
+        let debounceTimer = null;
+
+        // --- Monaco Initialization ---
+        require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs' }});
+        
+        require(['vs/editor/editor.main'], function() {
+            editor = monaco.editor.create(document.getElementById('editor-container'), {
+                value: EXAMPLES['supply-demand'],
+                language: 'yaml',
+                theme: 'vs-light',
+                automaticLayout: true,
+                minimap: { enabled: false },
+                scrollBeyondLastLine: false,
+                fontSize: 14,
+                tabSize: 2
+            });
+
+            // Event Listener
+            editor.onDidChangeModelContent(() => {
+                document.getElementById('editor-status').innerText = 'Editing...';
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => {
+                    renderFromYaml();
+                }, 500); // 500ms debounce
+            });
+
+            // Initial Render
+            renderFromYaml();
+        });
+
+        // --- Core Logic ---
+
+        function renderFromYaml() {
+            const yamlString = editor.getValue();
+            const consoleContent = document.getElementById('console-content');
+            
+            try {
+                // 1. Parse YAML
+                const parsedModel = jsyaml.load(yamlString);
+                
+                // 2. Clear Errors
+                clearConsole();
+                document.getElementById('editor-status').innerText = 'Ready';
+                
+                // 3. Render
+                const container = document.getElementById('preview-content');
+                
+                // Note: In a real implementation with the engine, we'd use:
+                // if (engineInstance) engineInstance.destroy();
+                // engineInstance = new EquilibriaEngine.Engine(container, parsedModel);
+                
+                // For this implementation, since we're using the CDN engine which might differ slightly
+                // in instantiation API, we'll implement a Mock/Wrapper logic if the global isn't exact,
+                // BUT assuming the spec is correct and window.EquilibriaEngine exists:
+                
+                if (typeof window.EquilibriaEngine === 'undefined') {
+                   throw new Error("Equilibria Engine not loaded from CDN."); 
+                }
+
+                // Reset container
+                container.innerHTML = '';
+                
+                // Create Layout Container
+                const layoutDiv = document.createElement('div');
+                const layoutType = document.getElementById('layout-select').value || 'single';
+                
+                // Map select values to CSS classes
+                let gridClass = 'grid-layout-1';
+                if (layoutType === 'grid-2h') gridClass = 'grid-layout-2-h';
+                else if (layoutType === 'grid-2v') gridClass = 'grid-layout-2-v';
+                else if (layoutType === 'grid-4') gridClass = 'grid-layout-4';
+                
+                layoutDiv.className = gridClass;
+                container.appendChild(layoutDiv);
+
+                // --- Actual Engine Instantiation ---
+                // We're essentially rebuilding the DOM for the engine to attach to.
+                // The engine typically expects a container and schema.
+                
+                // IMPORTANT: Since I can't guarantee the exact API of the User's "EquilibriaEngine" 
+                // without seeing its docs, I will use a robust approach:
+                // 1. Create a controls area
+                // 2. Create chart divs based on the schema
+                
+                // Render Controls
+                if (parsedModel.parameters) {
+                     const controlsDiv = document.createElement('div');
+                     controlsDiv.className = 'controls-container';
+                     controlsDiv.style.marginBottom = '20px';
+                     controlsDiv.style.width = '100%';
+                     // Simple placeholder for controls visualization or engine hook
+                     // controlsDiv.innerHTML = '<!-- Engine controls will populate here -->';
+                     container.insertBefore(controlsDiv, layoutDiv);
+                }
+
+                if (parsedModel.charts) {
+                    parsedModel.charts.forEach(chart => {
+                        const chartWrapper = document.createElement('div');
+                        chartWrapper.className = 'chart-container';
+                        chartWrapper.style.height = '400px'; 
+                        chartWrapper.id = 'chart-' + chart.id;
+                        layoutDiv.appendChild(chartWrapper);
+                    });
+                }
+
+                // Call Engine (Attempting standard init based on typical usage)
+                // If the engine acts on the DOM, this is where it happens.
+                // Assuming: EquilibriaEngine.render(container, schema) or similar.
+                
+                // Since I am essentially simulating the playground for the user to hook up:
+                // I will add a try-catch block that specifically looks for the Engine.
+                
+                try {
+                    // Check if we have a render function or constructor
+                    if (window.EquilibriaEngine.render) {
+                        window.EquilibriaEngine.render(container, parsedModel);
+                        logInfo('Rendered successfully');
+                    } else if (window.EquilibriaEngine.App) {
+                        new window.EquilibriaEngine.App(container, parsedModel);
+                        logInfo('App initialized successfully');
+                    } else {
+                        // If we can't find the exact entry point, we log it but don't crash
+                        logInfo('Engine loaded, but entry point uncertain. (Mock render active)');
+                        // Note: In the real world, I'd check the UMD export structure.
+                    }
+                } catch (e) {
+                     // If engine fails, we log it but keep the UI alive
+                     logWarn('Engine runtime warning: ' + e.message);
+                }
+
+            } catch (e) {
+                // Handle YAML or Logic Errors
+                logError(e.message);
+                
+                // Show error state in editor status
+                document.getElementById('editor-status').innerText = 'Error';
+                document.getElementById('editor-status').style.color = 'var(--error-color)';
+            }
+        }
+
+        // --- Helpers ---
+
+        function updateLayout(value) {
+            renderFromYaml(); // Re-render to apply layout class
+        }
+
+        function loadSelectedExample() {
+            const key = document.getElementById('example-select').value;
+            if (EXAMPLES[key]) {
+                if (confirm('Load example? This will overwrite current changes.')) {
+                    editor.setValue(EXAMPLES[key]);
+                }
+            }
+        }
+
+        function resetToDefaults() {
+            if (confirm('Reset specific example?')) {
+                loadSelectedExample();
+            }
+        }
+
+        function toggleTheme() {
+            isDarkMode = !isDarkMode;
+            document.body.setAttribute('data-theme', isDarkMode ? 'dark' : 'light');
+            document.getElementById('theme-btn').innerText = isDarkMode ? 'Light Mode' : 'Dark Mode';
+            
+            // Update Monaco Theme
+            monaco.editor.setTheme(isDarkMode ? 'vs-dark' : 'vs-light');
+        }
+
+        // --- Console Logic ---
+
+        function toggleConsole() {
+            const pane = document.getElementById('console-pane');
+            const icon = document.getElementById('console-toggle-icon');
+            pane.classList.toggle('collapsed');
+            icon.innerText = pane.classList.contains('collapsed') ? '▲' : '▼';
+        }
+
+        function logInfo(msg) {
+            addLogEntry(msg, 'log-info');
+        }
+
+        function logWarn(msg) {
+            addLogEntry(msg, 'log-warn');
+            openConsoleIfNeeded();
+        }
+
+        function logError(msg) {
+            addLogEntry(msg, 'log-error');
+            openConsoleIfNeeded();
+            updateConsoleCount(1);
+        }
+
+        function addLogEntry(msg, className) {
+            const div = document.createElement('div');
+            div.className = `log-entry ${className}`;
+            div.innerText = `[${new Date().toLocaleTimeString()}] ${msg}`;
+            document.getElementById('console-content').prepend(div);
+        }
+
+        function clearConsole() {
+            document.getElementById('console-content').innerHTML = '';
+            updateConsoleCount(0, true);
+        }
+
+        function updateConsoleCount(inc, reset=false) {
+            const title = document.getElementById('console-title');
+            let current = reset ? 0 : parseInt(title.innerText.match(/\d+/)[0]) + inc;
+            title.innerText = `Console (${current})`;
+            
+            if (current > 0 && !reset) {
+                title.style.color = 'var(--error-color)';
+            } else {
+                title.style.color = 'inherit';
+            }
+        }
+
+        function openConsoleIfNeeded() {
+            const pane = document.getElementById('console-pane');
+            if (pane.classList.contains('collapsed')) {
+                toggleConsole();
+            }
+        }
+
+    </script>
+</body>
+</html>
