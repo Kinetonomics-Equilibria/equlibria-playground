@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Equilibria Engine Playground</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='%232563eb' d='M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5'/></svg>">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -398,6 +399,23 @@
 
     <!-- APP LOGIC -->
     <script>
+        // --- Disable localStorage for CDN libraries to avoid tracking prevention errors ---
+        (function() {
+            try {
+                const testKey = '__storage_test__';
+                localStorage.setItem(testKey, testKey);
+                localStorage.removeItem(testKey);
+            } catch (e) {
+                // If localStorage is blocked, stub it out to prevent errors
+                console.warn('localStorage blocked - using memory fallback');
+                const memoryStorage = {};
+                Storage.prototype.setItem = function(key, value) { memoryStorage[key] = value; };
+                Storage.prototype.getItem = function(key) { return memoryStorage[key] || null; };
+                Storage.prototype.removeItem = function(key) { delete memoryStorage[key]; };
+                Storage.prototype.clear = function() { Object.keys(memoryStorage).forEach(k => delete memoryStorage[k]); };
+            }
+        })();
+
         // --- Examples Data ---
         const EXAMPLES = {
             'supply-demand': `metadata:
@@ -572,88 +590,33 @@ charts:
                 // 3. Render
                 const container = document.getElementById('preview-content');
 
-                // Note: In a real implementation with the engine, we'd use:
-                // if (engineInstance) engineInstance.destroy();
-                // engineInstance = new EquilibriaEngine.Engine(container, parsedModel);
-
-                // For this implementation, since we're using the CDN engine which might differ slightly
-                // in instantiation API, we'll implement a Mock/Wrapper logic if the global isn't exact,
-                // BUT assuming the spec is correct and window.EquilibriaEngine exists:
-
-                if (typeof window.EquilibriaEngine === 'undefined') {
-                    throw new Error("Equilibria Engine not loaded from CDN.");
-                }
-
                 // Reset container
                 container.innerHTML = '';
 
-                // Create Layout Container
-                const layoutDiv = document.createElement('div');
-                const layoutType = document.getElementById('layout-select').value || 'single';
-
-                // Map select values to CSS classes
-                let gridClass = 'grid-layout-1';
-                if (layoutType === 'grid-2h') gridClass = 'grid-layout-2-h';
-                else if (layoutType === 'grid-2v') gridClass = 'grid-layout-2-v';
-                else if (layoutType === 'grid-4') gridClass = 'grid-layout-4';
-
-                layoutDiv.className = gridClass;
-                container.appendChild(layoutDiv);
-
-                // --- Actual Engine Instantiation ---
-                // We're essentially rebuilding the DOM for the engine to attach to.
-                // The engine typically expects a container and schema.
-
-                // IMPORTANT: Since I can't guarantee the exact API of the User's "EquilibriaEngine" 
-                // without seeing its docs, I will use a robust approach:
-                // 1. Create a controls area
-                // 2. Create chart divs based on the schema
-
-                // Render Controls
-                if (parsedModel.parameters) {
-                    const controlsDiv = document.createElement('div');
-                    controlsDiv.className = 'controls-container';
-                    controlsDiv.style.marginBottom = '20px';
-                    controlsDiv.style.width = '100%';
-                    // Simple placeholder for controls visualization or engine hook
-                    // controlsDiv.innerHTML = '<!-- Engine controls will populate here -->';
-                    container.insertBefore(controlsDiv, layoutDiv);
-                }
-
-                if (parsedModel.charts) {
-                    parsedModel.charts.forEach(chart => {
-                        const chartWrapper = document.createElement('div');
-                        chartWrapper.className = 'chart-container';
-                        chartWrapper.style.height = '400px';
-                        chartWrapper.id = 'chart-' + chart.id;
-                        layoutDiv.appendChild(chartWrapper);
-                    });
-                }
-
-                // Call Engine (Attempting standard init based on typical usage)
-                // If the engine acts on the DOM, this is where it happens.
-                // Assuming: EquilibriaEngine.render(container, schema) or similar.
-
-                // Since I am essentially simulating the playground for the user to hook up:
-                // I will add a try-catch block that specifically looks for the Engine.
-
+                // Call Engine - let it manage its own DOM structure
                 try {
-                    // Check if we have a render function or constructor
+                    if (typeof window.EquilibriaEngine === 'undefined') {
+                        throw new Error("Equilibria Engine not loaded from CDN. Check your internet connection.");
+                    }
+
+                    // The engine should handle rendering controls and charts
                     if (window.EquilibriaEngine.render) {
-                        // FIX: Pass ID string, not element, as engine may prepend '#'
-                        window.EquilibriaEngine.render(container.id, parsedModel);
+                        // Pass the container element directly (not ID)
+                        window.EquilibriaEngine.render(container, parsedModel);
                         logInfo('Rendered successfully');
                     } else if (window.EquilibriaEngine.App) {
-                        new window.EquilibriaEngine.App(container.id, parsedModel);
+                        new window.EquilibriaEngine.App(container, parsedModel);
                         logInfo('App initialized successfully');
+                    } else if (typeof window.EquilibriaEngine === 'function') {
+                        // Constructor pattern
+                        new window.EquilibriaEngine(container, parsedModel);
+                        logInfo('Engine initialized successfully');
                     } else {
-                        // If we can't find the exact entry point, we log it but don't crash
-                        logInfo('Engine loaded, but entry point uncertain. (Mock render active)');
-                        // Note: In the real world, I'd check the UMD export structure.
+                        throw new Error('EquilibriaEngine API not recognized. Available methods: ' + Object.keys(window.EquilibriaEngine).join(', '));
                     }
                 } catch (e) {
-                    // If engine fails, we log it but keep the UI alive
-                    logWarn('Engine runtime warning: ' + e.message);
+                    logError('Engine error: ' + e.message);
+                    console.error('Full error:', e);
                 }
 
             } catch (e) {
