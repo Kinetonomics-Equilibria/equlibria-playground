@@ -27,7 +27,8 @@ export const ChartPreview: React.FC<ChartPreviewProps> = ({ parsedData, error })
         if (containerRef.current && parsedData) {
             try {
                 containerRef.current.innerHTML = '';
-                const engine = new KineticGraph(parsedData);
+                const configToPass = parsedData.schema ? parsedData.schema : parsedData;
+                const engine = new KineticGraph(configToPass);
                 engine.mount(containerRef.current);
                 engineRef.current = engine;
             } catch (err: any) {
