@@ -35,6 +35,17 @@ export const ChartPreview: React.FC<ChartPreviewProps> = ({ parsedData, error })
                 setEngineError(err.message || 'Unknown engine rendering error');
             }
         }
+
+        return () => {
+            if (engineRef.current) {
+                try {
+                    engineRef.current.destroy();
+                } catch (e) {
+                    console.error("Error destroying engine on unmount:", e);
+                }
+                engineRef.current = null;
+            }
+        };
     }, [parsedData]);
 
     const displayError = error || engineError;
