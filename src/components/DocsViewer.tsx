@@ -27,11 +27,15 @@ export const DocsViewer: React.FC<DocsViewerProps> = ({ onClose }) => {
             setLoading(true);
             setError(null);
             try {
-                const response = await fetch(`/docs/${currentFile}`);
+                const response = await fetch(`/docs/schema/${currentFile}`);
                 if (!response.ok) {
                     throw new Error('Failed to fetch documentation.');
                 }
                 const text = await response.text();
+                // Vite returns index.html for missing routes, so if it looks like HTML, it's missing
+                if (text.trim().toLowerCase().startsWith('<!doctype html>')) {
+                    throw new Error('Documentation file not found.');
+                }
                 setMarkdown(text);
             } catch (err: any) {
                 console.error('Error fetching docs:', err);
