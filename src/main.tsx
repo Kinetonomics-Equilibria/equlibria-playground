@@ -1,7 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
-import "equilibria-engine-js/src/css/kgjs-theme.css"
+import "equilibria-engine-js/dist/style.css"
 import "katex/dist/katex.min.css"
 import App from './App.tsx'
 

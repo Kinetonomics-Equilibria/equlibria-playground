@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import yaml from 'js-yaml';
-import { Settings, Download, Github } from 'lucide-react';
+import { Book, Settings, Download, Github } from 'lucide-react';
 import { YamlEditor } from './components/YamlEditor';
 import { ChartPreview } from './components/ChartPreview';
+import { DocsViewer } from './components/DocsViewer';
 import { defaultYamlModel } from './models/defaultModel';
 
 const App: React.FC = () => {
   const [yamlContent, setYamlContent] = useState<string>(defaultYamlModel);
   const [parsedData, setParsedData] = useState<any | null>(null);
   const [parseError, setParseError] = useState<string | null>(null);
+  const [showDocs, setShowDocs] = useState<boolean>(false);
 
   useEffect(() => {
     // Parse YAML whenever it changes
@@ -40,6 +42,9 @@ const App: React.FC = () => {
         <div style={{ flex: 1 }}></div>
 
         <div style={{ display: 'flex', gap: '8px' }}>
+          <button className="icon-btn" onClick={() => setShowDocs(!showDocs)} title="Documentation">
+            <Book size={20} />
+          </button>
           <button className="icon-btn" title="Settings">
             <Settings size={20} />
           </button>
@@ -54,6 +59,12 @@ const App: React.FC = () => {
       </header>
 
       <main className="workspace">
+        {showDocs && (
+          <section className="pane docs-pane">
+            <DocsViewer onClose={() => setShowDocs(false)} />
+          </section>
+        )}
+
         <section className="pane">
           <header className="pane-header">
             Model Editor (YAML)
