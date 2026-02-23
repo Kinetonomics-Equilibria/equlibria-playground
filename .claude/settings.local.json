@@ -1,9 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(./serve.sh:*)",
-      "Bash(npx http-server:*)",
-      "Bash(claude doctor)"
-    ]
-  }
-}
