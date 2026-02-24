@@ -17,19 +17,42 @@ export const ChartPreview: React.FC<ChartPreviewProps> = ({ parsedData, error })
             try {
                 engineRef.current.destroy();
             } catch (e) {
-                console.error("Error destroying engine:", e);
+                // Ignore destroy errors
             }
             engineRef.current = null;
         }
 
         setEngineError(null);
 
-        if (containerRef.current && parsedData) {
+        if (!containerRef.current || !parsedData) return;
+
+        const container = containerRef.current;
+
+        // Use requestAnimationFrame to ensure the container has been laid out
+        // and has real dimensions before mounting the engine
+        const rafId = requestAnimationFrame(() => {
+            // Double-check container still exists and has dimensions
+            if (!container || !container.isConnected) return;
+
+            const width = container.clientWidth;
+            if (width <= 0) {
+                console.warn('ChartPreview: container has no width, retrying...');
+                // Retry after a short delay
+                const retryId = setTimeout(() => {
+                    if (!container || !container.isConnected) return;
+                    mountEngine(container);
+                }, 100);
+                return () => clearTimeout(retryId);
+            }
+
+            mountEngine(container);
+        });
+
+        function mountEngine(el: HTMLDivElement) {
             try {
-                containerRef.current.innerHTML = '';
-                const configToPass = parsedData.schema ? parsedData.schema : parsedData;
-                const engine = new KineticGraph(configToPass);
-                engine.mount(containerRef.current);
+                el.innerHTML = '';
+                const engine = new KineticGraph(parsedData);
+                engine.mount(el);
                 engineRef.current = engine;
             } catch (err: any) {
                 console.error("Engine Render Error:", err);
@@ -38,11 +61,12 @@ export const ChartPreview: React.FC<ChartPreviewProps> = ({ parsedData, error })
         }
 
         return () => {
+            cancelAnimationFrame(rafId);
             if (engineRef.current) {
                 try {
                     engineRef.current.destroy();
                 } catch (e) {
-                    console.error("Error destroying engine on unmount:", e);
+                    // Ignore destroy errors
                 }
                 engineRef.current = null;
             }
