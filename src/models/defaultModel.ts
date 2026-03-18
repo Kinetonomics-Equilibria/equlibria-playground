@@ -1,4 +1,5 @@
 export const defaultYamlModel = `schema: Schema
+clearColor: "#0A0E1A"
 
 params:
   - name: supplyShift
