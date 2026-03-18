@@ -34,9 +34,9 @@ const App: React.FC = () => {
     <div className="app-container">
       <header className="header">
         <div className="flex items-center" style={{ display: 'flex', alignItems: 'center' }}>
-          <div className="pulse-glow" style={{ width: '24px', height: '24px', borderRadius: '50%', background: 'linear-gradient(135deg, var(--accent-cyan), var(--accent-blue))', marginRight: '16px' }}></div>
-          <h1 className="header-title">Equilibria Playground</h1>
-          <span className="header-subtitle">Interactive Economics Engine</span>
+          <div className="pulse-glow" style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'var(--accent-gradient)', marginRight: '16px', boxShadow: 'var(--shadow-glow)' }}></div>
+          <h1 className="header-title">Equilibria</h1>
+          <span className="header-subtitle">Interactive Playground</span>
         </div>
 
         <div style={{ flex: 1 }}></div>

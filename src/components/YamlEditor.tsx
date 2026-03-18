@@ -21,11 +21,11 @@ export const YamlEditor: React.FC<YamlEditorProps> = ({ value, onChange }) => {
                     { token: 'keyword', foreground: '00E5FF' },
                 ],
                 colors: {
-                    'editor.background': '#151A22',
-                    'editor.lineHighlightBackground': '#1E2530',
-                    'editorLineNumber.foreground': '#647082',
-                    'editorIndentGuide.background': '#ffffff14',
-                    'editorIndentGuide.activeBackground': '#ffffff30',
+                    'editor.background': '#12161F',
+                    'editor.lineHighlightBackground': '#1A1F2B',
+                    'editorLineNumber.foreground': '#64748B',
+                    'editorIndentGuide.background': '#ffffff0a',
+                    'editorIndentGuide.activeBackground': '#ffffff1a',
                 }
             });
             monaco.editor.setTheme('equilibria-dark');

@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import "equilibria-engine-js/dist/style.css"
 import "katex/dist/katex.min.css"
+import "equilibria-react/dist/style.css"
 import App from './App.tsx'
 
 // Suppress Monaco Editor's harmless "operation is manually canceled" warning in React Strict Mode

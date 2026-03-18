@@ -1,5 +1,5 @@
 # Equilibria Engine JS (`equilibria-engine-js`)
-**AI Implementation Guide**
+**AI Implementation Guide — v1.0.4**
 
 This file provides LLMs and AI coding assistants with the necessary context, API surface, and best practices for integrating the `equilibria-engine-js` library into modern web applications (React, NextJS, Vite, Vue, Vanilla JS).
 
@@ -9,7 +9,7 @@ This file provides LLMs and AI coding assistants with the necessary context, API
 - **MathJS** for real-time expression evaluation.
 - **KaTeX** for mathematical typography.
 
-It follows a declarative configuration pattern (typically defined in JSON or YAML) that binds mathematical models directly to visual SVG components.
+It follows a declarative configuration pattern (defined in YAML or JSON) that binds mathematical models directly to visual SVG components.
 
 ## 2. Installation & CSS Requirements
 
@@ -36,7 +36,7 @@ The engine is encapsulated in the `KineticGraph` class.
 ```javascript
 import { KineticGraph } from "equilibria-engine-js";
 
-const config = { /* ... see configuration schema ... */ };
+const config = { /* ... see YAML schema below ... */ };
 const containerElement = document.getElementById("graph-container");
 
 const kg = new KineticGraph(config);
@@ -44,7 +44,7 @@ kg.mount(containerElement); // Binds to DOM and renders
 ```
 
 ### B. Updating State Programmatically
-To update the graph from the outside (e.g., reacting to a React state slider), pass a partial config containing the new `params` values to `.update()`.
+To update the graph from the outside (e.g., reacting to a React state slider), pass a partial config containing new `params` values to `.update()`.
 
 ```javascript
 // This instantly updates the "price" param and re-renders dependent math/geometry
@@ -70,60 +70,127 @@ useEffect(() => {
 }, []);
 ```
 
-## 4. Configuration Schema
+## 4. YAML Document Schema (v1.0.4)
 
-The engine is driven by a `config` object. Here are the most important top-level keys:
+The configuration is a document with three top-level keys: `metadata`, `parameters`, and `charts`.
 
-### `params` (Independent State)
-Variables that drive the graph logic. They can be mutated by dragging or `.update()`.
-```json
-"params": [
-  { "name": "price", "value": 10, "min": 0, "max": 100, "round": 1 }
-]
+### `metadata` (REQUIRED)
+Document-level metadata. `title` and `specVersion` are required.
+```yaml
+metadata:
+  title: "Supply & Demand"
+  specVersion: "1.0"          # Required: "1.0" or "1.3"
+  description: "A description"
+  author: "Author Name"
+  topic: microeconomics       # microeconomics | macroeconomics | game-theory | ...
+  educationLevel: undergraduate  # high-school | undergraduate | graduate | professional
+  tags: ["supply", "demand"]
 ```
 
-### `calcs` (Computed State via MathJS)
-Derived math variables mapped from `params`.
-```json
-"calcs": {
-  "revenue": "price * 50",
-  "midpoint": "price / 2"
-}
+### `parameters` (Document-level state)
+An **object** (not an array) keyed by parameter name. Each parameter has a numeric `value`.
+```yaml
+parameters:
+  price:
+    value: 10
+    min: 0
+    max: 100
+    step: 1
+    label: "Price"
+    unit: "$"
+    hidden: false
+  quantity:
+    value: 50
+    expression: "100 - price"  # Calculated param via Math.js expression
 ```
 
-### `scales` (Viewport Mapping)
-Maps mathematical domains (e.g., $x \in [0, 20]$) to actual pixel ranges on the screen.
-```json
-"scales": [
-  { "name": "x", "axis": "x", "domainMin": 0, "domainMax": 20 },
-  { "name": "y", "axis": "y", "domainMin": 0, "domainMax": 20 }
-]
+### `charts` (REQUIRED — array of chart definitions)
+Each chart has `id`, `xAxis`, `yAxis`, and `elements`.
+
+```yaml
+charts:
+  - id: main-chart
+    title: "Market Equilibrium"
+    xAxis:
+      label: "Quantity"
+      min: 0
+      max: 100
+    yAxis:
+      label: "Price ($)"
+      min: 0
+      max: 100
+    showGrid: true
+    showLegend: false
+    elements:
+      # ... see element types below
 ```
 
-### `objects` (SVG Geometry)
-The visual elements rendered on the screen. Types include `Point`, `Segment`, `Curve`, `Function`, and `Label`.
+### Element Types
 
-*Interactive Dragging:* To make a point draggable (which directly mutates a parameter like `price`), supply a `drag` array.
+All elements require `type` and `id`. Colors must be **6-digit hex codes** (e.g., `#2563eb`).
 
-```json
-"objects": [
-  {
-    "type": "Point",
-    "def": {
-      "x": "10",
-      "y": "price", // Binds Y coordinate to the param
-      "color": "blue",
-      "drag": [
-        { 
-          "directions": "y", // Allow vertical dragging
-          "param": "price",  // Mutate this param
-          "prop": "y"        // Map pixel Y-movement back to param math value
-        }
-      ]
-    }
-  }
-]
+#### `line` — A function curve
+```yaml
+- type: line
+  id: demand
+  label: "Demand"
+  equation: "100 - 2 * x"    # Math.js expression with x as independent var
+  color: "#2563eb"
+  strokeWidth: 2
+  yShift: 0                   # Vertical shift (for scenario curve shifting)
+  xShift: 0                   # Horizontal shift
+```
+
+#### `point` — A coordinate marker
+```yaml
+- type: point
+  id: equilibrium
+  x: 50                       # Number or Math.js expression (e.g. "100 - price")
+  y: "price"                  # Can reference parameters by name
+  color: "#16a34a"
+  radius: 5
+  shape: circle               # circle | square | diamond | triangle | cross | star
+  showLabel: true
+  customLabel: "E"
+  labelPosition: topRight     # top | topRight | right | bottomRight | bottom | ...
+  showGuidelines: true        # Dashed lines to axes
+  guidelineStyle: dashed      # solid | dashed | dotted
+  draggable: false
+  dragParameter: "price"      # Which param to update when dragged
+```
+
+#### `verticalLine`
+```yaml
+- type: verticalLine
+  id: quantity-line
+  x: "100 - price"            # Number or expression
+  color: "#6b7280"
+  strokeDasharray: "5,5"
+  label: "Q*"
+```
+
+#### `horizontalLine`
+```yaml
+- type: horizontalLine
+  id: price-line
+  y: "price"
+  color: "#6b7280"
+  strokeDasharray: "5,5"
+  label: "P*"
+```
+
+#### `area` — Shaded region between boundaries
+```yaml
+- type: area
+  id: consumer-surplus
+  topBoundary: demand          # Element ID or expression
+  bottomBoundary: "price"      # Element ID or expression  
+  leftBoundary: "0"
+  rightBoundary: "100 - price"
+  color: "#2563eb"
+  opacity: 0.3
+  label: "CS"
 ```
 
 ## 5. Viewport Responsiveness
-The engine automatically attaches a `window` resize listener upon `mount()`. To ensure the graph sizes correctly, ensure the host `containerElement` has a defined CSS width (e.g., `width: 100%`). The engine scales height automatically based on the config's `aspectRatio` property.
+The engine automatically attaches a `ResizeObserver` upon `mount()`. To ensure the graph sizes correctly, ensure the host `containerElement` has a defined CSS width (e.g., `width: 100%`).
