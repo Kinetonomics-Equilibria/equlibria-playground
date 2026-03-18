@@ -6,8 +6,32 @@ interface ChartPreviewProps {
     error: string | null;
 }
 
+/**
+ * Inline CSS-variable overrides scoped to this subtree.
+ * These defeat the equilibria-react bundled CSS which resets :root to light-mode values.
+ */
+const chartThemeVars: React.CSSProperties = {
+    // Card shell
+    ['--eq-card-bg' as any]: 'rgba(10, 14, 26, 0.97)',
+    ['--eq-card-border' as any]: 'rgba(99, 102, 241, 0.22)',
+    ['--eq-card-radius' as any]: '14px',
+    ['--eq-card-shadow' as any]: '0 4px 32px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(99,102,241,0.22)',
+    ['--eq-card-shadow-hover' as any]: '0 8px 48px rgba(0,0,0,0.7), inset 0 0 0 1px rgba(129,140,248,0.35)',
+    ['--eq-card-blur' as any]: '0px',
+
+    // Typography
+    ['--eq-title-color' as any]: '#F0F4F8',
+    ['--eq-description-color' as any]: '#A0ABC0',
+    ['--eq-title-size' as any]: '1.05rem',
+
+    // Skeleton pulse - indigo/cyan palette matching the app
+    ['--eq-skeleton-bg' as any]: 'rgba(15, 20, 40, 0.8)',
+    ['--eq-skeleton-color-1' as any]: 'rgba(99, 102, 241, 0.15)',
+    ['--eq-skeleton-color-2' as any]: 'rgba(59, 130, 246, 0.15)',
+    ['--eq-skeleton-color-3' as any]: 'rgba(0, 229, 255, 0.10)',
+};
+
 export const ChartPreview: React.FC<ChartPreviewProps> = ({ parsedData, error }) => {
-    // If there's a parse error from upstream (e.g. invalid YAML), show it.
     if (error) {
         return (
             <div className="engine-container">
@@ -37,7 +61,7 @@ export const ChartPreview: React.FC<ChartPreviewProps> = ({ parsedData, error })
     }
 
     return (
-        <div className="engine-container">
+        <div className="engine-container" style={chartThemeVars}>
             <EquilibriaCard
                 config={parsedData}
                 style={{ width: '100%', height: '100%' }}

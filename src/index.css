@@ -34,15 +34,19 @@
   --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
 
   /* Equilibria React Overrides */
-  --eq-card-bg: var(--bg-panel);
-  --eq-card-border: var(--border-subtle);
-  --eq-card-radius: 12px;
-  --eq-card-shadow: var(--glass-shadow);
+  --eq-card-bg: rgba(10, 14, 26, 0.92);
+  --eq-card-border: rgba(99, 102, 241, 0.18);
+  --eq-card-radius: 14px;
+  --eq-card-shadow: 0 4px 24px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(99,102,241,0.18);
+  --eq-card-shadow-hover: 0 8px 40px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(99,102,241,0.3);
   --eq-title-color: var(--text-primary);
   --eq-description-color: var(--text-secondary);
   --eq-error-bg: rgba(239, 68, 68, 0.1);
   --eq-error-color: var(--error);
   --eq-skeleton-color: rgba(255, 255, 255, 0.05);
+  --eq-skeleton-color-1: rgba(99, 102, 241, 0.12);
+  --eq-skeleton-color-2: rgba(59, 130, 246, 0.12);
+  --eq-skeleton-color-3: rgba(0, 229, 255, 0.08);
 }
 
 * {
@@ -138,8 +142,8 @@ body {
 
 .pane:last-child {
   margin-right: 16px;
-  background: rgba(15, 18, 25, 0.5);
-  /* Slightly darker for preview */
+  background: rgba(8, 11, 20, 0.65);
+  /* Deeper dark for preview contrast */
 }
 
 .pane-header {
