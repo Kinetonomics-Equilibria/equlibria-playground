@@ -1,5 +1,5 @@
 import React from 'react';
-import { EquilibriaCard } from 'equilibria-react';
+import { EquilibriaProvider, EquilibriaCard, EquilibriaSlider, EquilibriaCalculationCard } from 'equilibria-react';
 
 interface ChartPreviewProps {
     parsedData: any | null;
@@ -61,13 +61,38 @@ export const ChartPreview: React.FC<ChartPreviewProps> = ({ parsedData, error })
     }
 
     return (
-        <div className="engine-container" style={chartThemeVars}>
-            <EquilibriaCard
-                config={parsedData}
-                style={{ width: '100%', height: '100%' }}
-                title={parsedData?.metadata?.title || "Model Preview"}
-                description={parsedData?.metadata?.description || "Interactive dynamic model"}
-            />
-        </div>
+        <EquilibriaProvider config={parsedData}>
+            <div className="engine-container" style={chartThemeVars}>
+                <div style={{ display: 'flex', flexDirection: 'column', width: '100%', height: '100%', gap: '1rem' }}>
+                    {parsedData.params && parsedData.params.some((p: any) => p.name === 'supplyShift') && (
+                        <div style={{ display: 'flex', gap: '1rem', padding: '1rem', background: 'rgba(255,255,255,0.05)', borderRadius: '8px' }}>
+                            <div style={{ flex: 1 }}>
+                                <EquilibriaSlider 
+                                    param="supplyShift" 
+                                    min={-3} max={3} step={0.1} 
+                                    label="Supply Shock (UI Override)" 
+                                />
+                            </div>
+                            <div style={{ width: '200px' }}>
+                                <EquilibriaCalculationCard 
+                                    param="supplyShift" 
+                                    label="Current Shift Value" 
+                                    format={(v: any) => Number(v).toFixed(2)} 
+                                />
+                            </div>
+                        </div>
+                    )}
+
+                    <div style={{ flex: 1, minHeight: 0 }}>
+                        <EquilibriaCard
+                            config={parsedData}
+                            style={{ width: '100%', height: '100%' }}
+                            title={parsedData?.metadata?.title || "Model Preview"}
+                            description={parsedData?.metadata?.description || "Interactive dynamic model"}
+                        />
+                    </div>
+                </div>
+            </div>
+        </EquilibriaProvider>
     );
 };
